@@ -1,0 +1,46 @@
+{# One form used for both "new task" and "edit task". Jinja escapes every value
+   by default, so text a user types cannot inject HTML. #}
+{% macro task_form(action, values, errors, form_error, statuses, submit_label, prefix, cancel_url=None, autofocus=False) %}
+<form class="task-form" method="post" action="{{ action }}" novalidate>
+  <div class="field">
+    <label for="{{ prefix }}-title">Title</label>
+    <input id="{{ prefix }}-title" name="title" type="text" value="{{ values.title }}" maxlength="100" required
+           {% if autofocus %}autofocus{% endif %}
+           {% if errors.title %}aria-invalid="true" aria-describedby="{{ prefix }}-title-err"{% endif %}>
+    {% if errors.title %}<p class="field-error" id="{{ prefix }}-title-err">{{ errors.title }}</p>{% endif %}
+  </div>
+
+  <div class="field">
+    <label for="{{ prefix }}-description">Description (optional)</label>
+    <textarea id="{{ prefix }}-description" name="description" rows="3"
+              {% if errors.description %}aria-invalid="true" aria-describedby="{{ prefix }}-description-err"{% endif %}>{{ values.description }}</textarea>
+    {% if errors.description %}<p class="field-error" id="{{ prefix }}-description-err">{{ errors.description }}</p>{% endif %}
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="{{ prefix }}-due">Due date (optional)</label>
+      <input id="{{ prefix }}-due" name="due_date" type="date" value="{{ values.due_date }}"
+             {% if errors.due_date %}aria-invalid="true" aria-describedby="{{ prefix }}-due-err"{% endif %}>
+      {% if errors.due_date %}<p class="field-error" id="{{ prefix }}-due-err">{{ errors.due_date }}</p>{% endif %}
+    </div>
+
+    <div class="field">
+      <label for="{{ prefix }}-status">Status</label>
+      <select id="{{ prefix }}-status" name="status">
+        {% for value, label in statuses.items() %}
+        <option value="{{ value.value }}" {% if value.value == values.status %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      {% if errors.status %}<p class="field-error">{{ errors.status }}</p>{% endif %}
+    </div>
+  </div>
+
+  {% if form_error %}<p class="form-error" role="alert">{{ form_error }}</p>{% endif %}
+
+  <div class="actions">
+    <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+    {% if cancel_url %}<a class="btn" href="{{ cancel_url }}">Cancel</a>{% endif %}
+  </div>
+</form>
+{% endmacro %}
