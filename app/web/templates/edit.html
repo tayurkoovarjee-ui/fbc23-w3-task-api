@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_task_form.html" import task_form %}
+{% block title %}Edit task · Mini Task Tracker{% endblock %}
+{% block body %}
+<header class="topbar">
+  <h1>Mini Task Tracker</h1>
+  <div class="topbar-user">
+    <span class="muted">{{ user.email }}</span>
+    <form method="post" action="/app/logout"><button type="submit" class="btn">Sign out</button></form>
+  </div>
+</header>
+
+<main id="main" class="container">
+  <section class="card" aria-labelledby="edit-heading">
+    <h2 id="edit-heading">Edit task</h2>
+    {{ task_form("/app/tasks/" ~ task.id ~ "/edit", values, errors, form_error, statuses, "Save changes", "edit",
+                 cancel_url="/app", autofocus=True) }}
+  </section>
+</main>
+{% endblock %}

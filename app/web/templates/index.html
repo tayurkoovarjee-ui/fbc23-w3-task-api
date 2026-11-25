@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% from "_task_form.html" import task_form %}
+{% block body %}
+<header class="topbar">
+  <h1>Mini Task Tracker</h1>
+  <div class="topbar-user">
+    <span class="muted">{{ user.email }}</span>
+    <form method="post" action="/app/logout"><button type="submit" class="btn">Sign out</button></form>
+  </div>
+</header>
+
+<main id="main" class="container">
+  <section aria-labelledby="new-heading" class="card">
+    <h2 id="new-heading">New task</h2>
+    {{ task_form("/app/tasks", values, errors, form_error, statuses, "Add task", "new") }}
+  </section>
+
+  <section aria-labelledby="list-heading" class="card">
+    <h2 id="list-heading">Your tasks</h2>
+
+    {# The filters are a normal GET form: the choices go into the address and the page reloads. #}
+    <form class="filters" method="get" action="/app">
+      <div class="field">
+        <label for="filter-status">Show</label>
+        <select id="filter-status" name="status">
+          <option value="">All statuses</option>
+          {% for value, label in statuses.items() %}
+          <option value="{{ value.value }}" {% if value.value == filters.status %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="filter-search">Search</label>
+        <input id="filter-search" name="q" type="search" value="{{ filters.q }}" placeholder="Title or description">
+      </div>
+      <div class="field">
+        <label for="filter-sort">Sort by</label>
+        <select id="filter-sort" name="sort">
+          {% for value, label in sort_options %}
+          <option value="{{ value }}" {% if value == filters.sort %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn">Apply</button>
+        {% if is_filtered %}<a class="btn btn-link" href="/app">Clear</a>{% endif %}
+      </div>
+    </form>
+
+    {% if notice %}<p class="notice" role="status">{{ notice }}</p>{% endif %}
+
+    {% if not tasks %}
+    <p class="muted">{{ "No tasks match those filters." if is_filtered else "No tasks yet. Add your first one above." }}</p>
+    {% endif %}
+
+    <ul class="task-list">
+      {% for task in tasks %}
+      {% set overdue = task.due_date and task.status.value != "done" and task.due_date < today %}
+      <li>
+        <article class="task {{ 'task-done' if task.status.value == 'done' }}">
+          <div class="task-head">
+            <h3>{{ task.title }}</h3>
+            <span class="badge badge-{{ task.status.value }}">{{ statuses[task.status] }}</span>
+          </div>
+          {% if task.description %}<p class="task-desc">{{ task.description }}</p>{% endif %}
+          {% if task.due_date %}
+          <p class="task-due {{ 'overdue' if overdue }}">
+            Due <time datetime="{{ task.due_date.isoformat() }}">{{ task.due_date.strftime("%-d %b %Y") }}</time>{% if overdue %} (overdue){% endif %}
+          </p>
+          {% endif %}
+          <div class="actions">
+            {% if task.status.value != "done" %}
+            <form method="post" action="/app/tasks/{{ task.id }}/complete">
+              <button type="submit" class="btn" aria-label='Mark "{{ task.title }}" as done'>Complete</button>
+            </form>
+            {% endif %}
+            <a class="btn" href="/app/tasks/{{ task.id }}/edit" aria-label='Edit "{{ task.title }}"'>Edit</a>
+            {# The one bit of JavaScript: ask before deleting. Without it the delete still works. #}
+            <form method="post" action="/app/tasks/{{ task.id }}/delete"
+                  onsubmit="return confirm('Delete this task? This cannot be undone.')">
+              <button type="submit" class="btn btn-danger" aria-label='Delete "{{ task.title }}"'>Delete</button>
+            </form>
+          </div>
+        </article>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+</main>
+{% endblock %}

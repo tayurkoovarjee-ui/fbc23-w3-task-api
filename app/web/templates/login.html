@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% set registering = mode == "register" %}
+{% block title %}{{ "Create an account" if registering else "Sign in" }} · Mini Task Tracker{% endblock %}
+{% block body %}
+<main id="main" class="auth">
+  <h1>{{ "Create an account" if registering else "Sign in" }}</h1>
+  <p class="muted">Each account only sees its own tasks.</p>
+
+  <form method="post" action="/app/{{ 'register' if registering else 'login' }}" novalidate class="task-form">
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" value="{{ email }}" required
+             {% if errors.email %}aria-invalid="true" aria-describedby="email-err"{% endif %}>
+      {% if errors.email %}<p class="field-error" id="email-err">{{ errors.email }}</p>{% endif %}
+    </div>
+
+    <div class="field">
+      <label for="password">Password{% if registering %} (at least 8 characters){% endif %}</label>
+      <input id="password" name="password" type="password"
+             autocomplete="{{ 'new-password' if registering else 'current-password' }}" required
+             {% if errors.password %}aria-invalid="true" aria-describedby="password-err"{% endif %}>
+      {% if errors.password %}<p class="field-error" id="password-err">{{ errors.password }}</p>{% endif %}
+    </div>
+
+    {% if form_error %}<p class="form-error" role="alert">{{ form_error }}</p>{% endif %}
+
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">{{ "Create account" if registering else "Sign in" }}</button>
+      <a class="btn btn-link" href="/app/{{ 'login' if registering else 'register' }}">
+        {{ "I already have an account" if registering else "Create an account instead" }}
+      </a>
+    </div>
+  </form>
+</main>
+{% endblock %}
